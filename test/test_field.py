@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from cronexp._field import parse_field
+from cronexp._field import FieldParseError, parse_field
 
 
 class ParseFieldTest(unittest.TestCase):
@@ -54,3 +54,26 @@ class ParseFieldTest(unittest.TestCase):
         self.assertEqual(
                 parse_field('0/3,1/3', 0, 10),
                 [0, 1, 3, 4, 6, 7, 9, 10])
+
+    def test_error_not_match(self):
+        with self.assertRaises(FieldParseError):
+            parse_field('0-1-2', 0, 10)
+
+    def test_error_out_of_range(self):
+        field_list = [
+                '0',
+                '11',
+                '0-10',
+                '1-11']
+        for field in field_list:
+            with self.subTest(field=field):
+                with self.assertRaises(FieldParseError):
+                    parse_field(field, 1, 10)
+
+    def test_error_step0(self):
+        with self.assertRaises(FieldParseError):
+            parse_field('*/0', 0, 10)
+
+    def test_error_invalid_range(self):
+        with self.assertRaises(FieldParseError):
+            parse_field('7-3', 0, 10)
