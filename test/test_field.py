@@ -34,3 +34,23 @@ class ParseFieldTest(unittest.TestCase):
         self.assertEqual(
                 parse_field('1-9/3', 0, 10),
                 [1, 4, 7])
+
+    def test_multi(self):
+        self.assertEqual(
+                parse_field('0,1', 0, 1),
+                [0, 1])
+
+    def test_multi_sort(self):
+        self.assertEqual(
+                parse_field('1,0', 0, 10),
+                [0, 1])
+
+    def test_multi_uniq(self):
+        self.assertEqual(
+                parse_field('0,0,0', 0, 10),
+                [0])
+
+    def test_multi_step(self):
+        self.assertEqual(
+                parse_field('0/3,1/3', 0, 10),
+                [0, 1, 3, 4, 6, 7, 9, 10])
