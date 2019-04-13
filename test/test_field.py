@@ -5,10 +5,10 @@ from cronexp._field import FieldParseError, parse_field
 
 
 class ParseFieldTest(unittest.TestCase):
-    def test_all(self):
+    def test_any(self):
         self.assertEqual(
                 parse_field('*', 0, 10),
-                [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+                None)
 
     def test_single(self):
         self.assertEqual(
@@ -19,6 +19,11 @@ class ParseFieldTest(unittest.TestCase):
         self.assertEqual(
                 parse_field('2-6', 0, 10),
                 [2, 3, 4, 5, 6])
+
+    def test_all(self):
+        self.assertEqual(
+                parse_field('0-10', 0, 10),
+                [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
     def test_step_all(self):
         self.assertEqual(
@@ -54,6 +59,20 @@ class ParseFieldTest(unittest.TestCase):
         self.assertEqual(
                 parse_field('0/3,1/3', 0, 10),
                 [0, 1, 3, 4, 6, 7, 9, 10])
+
+    def test_multi_with_any(self):
+        field_list = [
+                '0,*',
+                '*,0',
+                '0-3,*',
+                '*,0-3',
+                '0/3,*',
+                '*,0/3']
+        for field in field_list:
+            with self.subTest(field=field):
+                self.assertEqual(
+                        parse_field(field, 0, 10),
+                        None)
 
     def test_error_not_match(self):
         with self.assertRaises(FieldParseError):

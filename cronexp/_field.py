@@ -18,17 +18,17 @@ def evaluate_field(
         max_: int,
         begin: Optional[int],
         end: Optional[int],
-        step: Optional[int]) -> List[int]:
-    result: List[int] = []
+        step: Optional[int]) -> Optional[List[int]]:
     if step is None:
         if begin is None:
-            result.extend(range(min_, max_ + 1))
+            return None
         else:
             if end is None:
-                result.append(begin)
+                return [begin]
             else:
-                result.extend(range(begin, end + 1))
+                return list(range(begin, end + 1))
     else:
+        result: List[int] = []
         init = begin if begin is not None else min_
         last = end if end is not None else max_
         if init < last and 0 < step:
@@ -36,14 +36,14 @@ def evaluate_field(
             while value <= last:
                 result.append(value)
                 value += step
-    return result
+        return result
 
 
 def parse_field(
         field: str,
         min_: int,
-        max_: int) -> List[int]:
-    target: List[int] = []
+        max_: int) -> Optional[List[int]]:
+    result: Optional[List[int]] = []
     pattern = re.compile(
             r'^((?P<any>\*)|(?P<begin>[0-9]+)(|-(?P<end>[0-9]+)))'
             r'(|/(?P<step>[0-9]+))$')
@@ -76,11 +76,10 @@ def parse_field(
                     field,
                     'invalid range({0}...{1})'.format(begin, end))
         # evaluate
-        target.extend(evaluate_field(
-                min_,
-                max_,
-                begin,
-                end,
-                step))
+        evaluated = evaluate_field(min_, max_, begin, end, step)
+        if result is None or evaluated is None:
+            result = None
+        else:
+            result.extend(evaluated)
     # sort & unique
-    return sorted(set(target))
+    return None if result is None else sorted(set(result))
