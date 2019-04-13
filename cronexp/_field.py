@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from typing import List, Optional
+from typing import List, NamedTuple, Optional
 
 
 class FieldParseError(Exception):
@@ -11,6 +11,39 @@ class FieldParseError(Exception):
 
     def __str__(self) -> str:
         return '{0}: {1}'.format(self.field, self.reason)
+
+
+class FieldNext(NamedTuple):
+    value: int
+    move_up: bool
+
+
+class Field:
+    def __init__(
+            self,
+            field: str,
+            min_: int,
+            max_: int) -> None:
+        value = parse_field(field, min_, max_)
+        self._is_any = value is None
+        self._selected_list = (
+                value
+                if value is not None
+                else list(range(min_, max_ + 1)))
+
+    @property
+    def is_any(self) -> bool:
+        return self._is_any
+
+    def next(self, value: int) -> FieldNext:
+        for i in self._selected_list:
+            if value < i:
+                return FieldNext(value=i, move_up=False)
+        else:
+            return FieldNext(value=min(self._selected_list), move_up=True)
+
+    def is_selected(self, value: int) -> bool:
+        return value in self._selected_list
 
 
 def evaluate_field(
