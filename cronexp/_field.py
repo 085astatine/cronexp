@@ -40,10 +40,16 @@ class Field:
             if value < i:
                 return FieldNext(value=i, move_up=False)
         else:
-            return FieldNext(value=min(self._selected_list), move_up=True)
+            return FieldNext(value=self.min(), move_up=True)
 
     def is_selected(self, value: int) -> bool:
         return value in self._selected_list
+
+    def min(self) -> int:
+        return min(self._selected_list)
+
+    def max(self) -> int:
+        return max(self._selected_list)
 
 
 def evaluate_field(
