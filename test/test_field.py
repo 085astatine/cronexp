@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import itertools
 import unittest
-from cronexp._field import Field, FieldParseError, parse_field
+from cronexp._field import (
+        Field, FieldParseError,
+        parse_field, month_word_set, weekday_word_set)
 
 
 class ParseFieldTest(unittest.TestCase):
@@ -96,6 +99,44 @@ class ParseFieldTest(unittest.TestCase):
     def test_error_invalid_range(self):
         with self.assertRaises(FieldParseError):
             parse_field('7-3', 0, 10)
+
+
+class ParseFieldWithWordSet(unittest.TestCase):
+    def test_single(self):
+        self.assertEqual(
+                parse_field('Jan', 1, 12, word_set=month_word_set()),
+                [1])
+
+    def test_case_insensitive(self):
+        for product in itertools.product('Ss', 'Uu', 'Nn'):
+            field = ''.join(product)
+            with self.subTest(field=field):
+                self.assertEqual(
+                    parse_field(field, 0, 6, word_set=weekday_word_set()),
+                    [0])
+
+    def test_range(self):
+        self.assertEqual(
+                parse_field('Mon-Fri', 0, 6, word_set=weekday_word_set()),
+                [1, 2, 3, 4, 5])
+
+    def test_step(self):
+        self.assertEqual(
+                parse_field('Apr-Dec/2', 1, 12, word_set=month_word_set()),
+                [4, 6, 8, 10, 12])
+
+    def test_mixin(self):
+        self.assertEqual(
+                parse_field('1,Feb', 1, 12, word_set=month_word_set()),
+                [1, 2])
+
+    def test_error_not_match(self):
+        with self.assertRaises(FieldParseError):
+            parse_field('JanFeb', 1, 12, word_set=month_word_set())
+
+    def test_error_word_in_step(self):
+        with self.assertRaises(FieldParseError):
+            parse_field('*/Feb', 1, 12, word_set=month_word_set())
 
 
 class FieldTest(unittest.TestCase):
