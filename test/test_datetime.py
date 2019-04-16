@@ -15,14 +15,14 @@ class TimeexpTest(unittest.TestCase):
             next_hour, next_minute = divmod(total_minutes + 1, 60)
             move_up = next_hour > 23
             next_hour %= 24
-            with self.subTest(minute=minute, hour=hour):
-                result = timeexp.next(minute, hour)
+            with self.subTest(hour=hour, minute=minute):
+                result = timeexp.next(hour=hour, minute=minute)
                 self.assertEqual(result.minute, next_minute)
                 self.assertEqual(result.hour, next_hour)
                 self.assertEqual(result.move_up, move_up)
                 self.assertTrue(timeexp.is_selected(
-                        minute=result.minute,
-                        hour=result.hour))
+                        hour=result.hour,
+                        minute=result.minute))
 
     def test_hourly(self):
         timeexp = Timeexp(minute='0', hour='*')
@@ -30,28 +30,28 @@ class TimeexpTest(unittest.TestCase):
             hour, minute = divmod(total_minutes, 60)
             next_hour = (hour + 1) % 24
             move_up = hour >= 23
-            with self.subTest(minute=minute, hour=hour):
-                result = timeexp.next(minute=minute, hour=hour)
+            with self.subTest(hour=hour, minute=minute):
+                result = timeexp.next(hour=hour, minute=minute)
                 self.assertEqual(result.minute, 0)
                 self.assertEqual(result.hour, next_hour)
                 self.assertEqual(result.move_up, move_up)
                 self.assertTrue(timeexp.is_selected(
-                        minute=result.minute,
-                        hour=result.hour))
+                        hour=result.hour,
+                        minute=result.minute))
 
     def test_daily(self):
         timeexp = Timeexp(minute='45', hour='2')
         for total_minutes in range(0, 24 * 60):
             hour, minute = divmod(total_minutes, 60)
             move_up = total_minutes >= 2 * 60 + 45
-            with self.subTest(minute=minute, hour=hour):
-                result = timeexp.next(minute=minute, hour=hour)
+            with self.subTest(hour=hour, minute=minute):
+                result = timeexp.next(hour=hour, minute=minute)
                 self.assertEqual(result.minute, 45)
                 self.assertEqual(result.hour, 2)
                 self.assertEqual(result.move_up, move_up)
                 self.assertTrue(timeexp.is_selected(
-                        minute=result.minute,
-                        hour=result.hour))
+                        hour=result.hour,
+                        minute=result.minute))
 
     def test_next(self):
         timeexp = Timeexp(minute='*/10', hour='*/3')
@@ -68,14 +68,14 @@ class TimeexpTest(unittest.TestCase):
                 next_hour = hour
                 next_minute = math.ceil((minute + 1) / 10) * 10
                 move_up = False
-            with self.subTest(minute=minute, hour=hour):
-                result = timeexp.next(minute=minute, hour=hour)
+            with self.subTest(hour=hour, minute=minute):
+                result = timeexp.next(hour=hour, minute=minute)
                 self.assertEqual(result.minute, next_minute)
                 self.assertEqual(result.hour, next_hour)
                 self.assertEqual(result.move_up, move_up)
                 self.assertTrue(timeexp.is_selected(
-                        minute=result.minute,
-                        hour=result.hour))
+                        hour=result.hour,
+                        minute=result.minute))
 
 
 class DateexpTest(unittest.TestCase):

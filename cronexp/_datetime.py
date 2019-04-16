@@ -22,13 +22,13 @@ class Timeexp:
         self._minute = Field(minute, 0, 59)
         self._hour = Field(hour, 0, 23)
 
-    def next(self, minute: int, hour: int) -> TimeexpNext:
-        def impl(minute_: int, hour_: int, move_up_: bool) -> TimeexpNext:
+    def next(self, hour: int, minute: int) -> TimeexpNext:
+        def impl(hour_: int, minute_: int, move_up_: bool) -> TimeexpNext:
             if not self._hour.is_selected(hour_):
                 next_hour = self._hour.next(hour)
                 return TimeexpNext(
-                        minute=self._minute.min(),
                         hour=next_hour.value,
+                        minute=self._minute.min(),
                         move_up=move_up_ or next_hour.move_up)
             else:
                 next_minute = self._minute.next(minute_)
@@ -36,16 +36,16 @@ class Timeexp:
                     hour_ += 1
                 if self._hour.is_selected(hour_):
                     return TimeexpNext(
-                            minute=next_minute.value,
                             hour=hour_,
+                            minute=next_minute.value,
                             move_up=move_up_)
                 else:
-                    return impl(next_minute.value, hour_, move_up_)
-        return impl(minute, hour, False)
+                    return impl(hour_, next_minute.value, move_up_)
+        return impl(hour, minute, False)
 
-    def is_selected(self, minute: int, hour: int) -> bool:
-        return (self._minute.is_selected(minute)
-                and self._hour.is_selected(hour))
+    def is_selected(self, hour: int, minute: int) -> bool:
+        return (self._hour.is_selected(hour)
+                and self._minute.is_selected(minute))
 
 
 class Dateexp:
@@ -61,47 +61,44 @@ class Dateexp:
 
     def next(self, day: int, month: int, year: int) -> DateexpNext:
         def next_day(
-                day_: Optional[int],
+                year_: int,
                 month_: int,
-                year_: int) -> Optional[int]:
+                day_: Optional[int]) -> Optional[int]:
             for day__ in range(1, calendar.monthrange(year_, month_)[1] + 1):
                 if day_ is not None and day__ <= day_:
                     continue
-                if self.is_selected(day__, month_, year_):
+                if self.is_selected(year_, month_, day__):
                     return day__
             else:
                 return None
 
         def impl(
-                day_: Optional[int],
+                year_: int,
                 month_: int,
-                year_: int) -> DateexpNext:
+                day_: Optional[int]) -> DateexpNext:
             if not self._month.is_selected(month_):
                 next_month = self._month.next(month_)
                 if next_month.move_up:
-                    return impl(None, next_month.value, year_ + 1)
+                    return impl(year_ + 1, next_month.value, None)
                 else:
-                    next_day_ = next_day(None, next_month.value, year_)
+                    next_day_ = next_day(year_, next_month.value, None)
                     if next_day_ is not None:
                         return DateexpNext(
-                                day=next_day_,
+                                year=year_,
                                 month=next_month.value,
-                                year=year_)
+                                day=next_day_)
                     else:
-                        return impl(None, next_month.value + 1, year_)
+                        return impl(year_, next_month.value + 1, None)
             else:
-                day_ = next_day(day_, month_, year_)
+                day_ = next_day(year_, month_, day_)
                 if day_ is not None:
-                    return DateexpNext(
-                            day=day_,
-                            month=month_,
-                            year=year_)
+                    return DateexpNext(year=year_, month=month_, day=day_)
                 else:
-                    return impl(None, month_ + 1, year_)
+                    return impl(year_, month_ + 1, None)
 
-        return impl(day, month, year)
+        return impl(year, month, day)
 
-    def is_selected(self, day: int, month: int, year: int) -> bool:
+    def is_selected(self, year: int, month: int, day: int) -> bool:
         if not self._month.is_selected(month):
             return False
         try:
