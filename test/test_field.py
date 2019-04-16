@@ -116,9 +116,16 @@ class ParseFieldWithWordSet(unittest.TestCase):
                     [0])
 
     def test_range(self):
-        self.assertEqual(
-                parse_field('Mon-Fri', 0, 6, word_set=weekday_word_set()),
-                [1, 2, 3, 4, 5])
+        field_list = [
+                'Mon-Fri',
+                'Mon-5',
+                '1-Fri',
+                '1-5']
+        for field in field_list:
+            with self.subTest(field=field):
+                self.assertEqual(
+                        parse_field(field, 0, 6, word_set=weekday_word_set()),
+                        [1, 2, 3, 4, 5])
 
     def test_step(self):
         self.assertEqual(

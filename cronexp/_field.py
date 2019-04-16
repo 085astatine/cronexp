@@ -102,15 +102,19 @@ def parse_field(
                     if match.group('step') is not None else None)
         elif word_set:
             match = re.match(
-                    r'^(?P<begin>({0}))(|-(?P<end>({0})))'
+                    r'^(?P<begin>({0}|[0-9]+))(|-(?P<end>({0}|[0-9]+)))'
                     r'(|/(?P<step>[0-9]+))$'
                     .format('|'.join(word_set.keys())),
                     x,
                     re.IGNORECASE)
             if match:
-                begin = (word_set[match.group('begin').lower()]
+                begin = (int(word_set.get(
+                                match.group('begin').lower(),
+                                match.group('begin')))
                          if match.group('begin') is not None else None)
-                end = (word_set[match.group('end').lower()]
+                end = (int(word_set.get(
+                                match.group('end').lower(),
+                                match.group('end')))
                        if match.group('end') is not None else None)
                 step = (int(match.group('step'))
                         if match.group('step') is not None else None)
