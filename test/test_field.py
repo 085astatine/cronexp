@@ -176,3 +176,9 @@ class FieldTest(unittest.TestCase):
                 else:
                     self.assertEqual(result.value, 5)
                     self.assertTrue(result.move_up)
+
+    def test_next_greater_than_max(self):
+        field = Field('1', 0, 10)
+        result = field.next(11)
+        self.assertEqual(result.value, 1)
+        self.assertTrue(result.move_up)
