@@ -78,23 +78,23 @@ class Dateexp:
                 day_: Optional[int]) -> DateexpNext:
             if not self._month.is_selected(month_):
                 next_month = self._month.next(month_)
+                day_ = None
+                month_ = next_month.value
                 if next_month.move_up:
-                    return impl(year_ + 1, next_month.value, None)
+                    year_ += 1
                 else:
-                    next_day_ = next_day(year_, next_month.value, None)
-                    if next_day_ is not None:
-                        return DateexpNext(
-                                year=year_,
-                                month=next_month.value,
-                                day=next_day_)
+                    day_ = next_day(year_, month_, day_)
+                    if day_ is not None:
+                        return DateexpNext(year=year_, month=month_, day=day_)
                     else:
-                        return impl(year_, next_month.value + 1, None)
+                        month_ += 1
             else:
                 day_ = next_day(year_, month_, day_)
                 if day_ is not None:
                     return DateexpNext(year=year_, month=month_, day=day_)
                 else:
-                    return impl(year_, month_ + 1, None)
+                    month_ += 1
+            return impl(year_, month_, day_)
 
         return impl(year, month, day)
 
