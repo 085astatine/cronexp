@@ -212,3 +212,8 @@ class DateexpTest(unittest.TestCase):
                 self.assertEqual(result.day, next_date.day)
                 self.assertEqual(result.month, next_date.month)
                 self.assertEqual(result.year, next_date.year)
+
+    def test_error_nonexistent_date(self):
+        with self.assertRaises(RecursionError):
+            dateexp = Dateexp(day='30', month='2', weekday='*')
+            dateexp.next(day=1, month=1, year=2019)
