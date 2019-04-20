@@ -9,59 +9,59 @@ from cronexp._field import (
 
 class ParseFieldTest(unittest.TestCase):
     def test_any(self):
-        self.assertEqual(
-                parse_field('*', 0, 10),
-                None)
+        result = parse_field('*', 0, 10)
+        self.assertTrue(result.is_any)
+        self.assertEqual(result.selected, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
     def test_single(self):
-        self.assertEqual(
-                parse_field('5', 0, 10),
-                [5])
+        result = parse_field('5', 0, 10)
+        self.assertFalse(result.is_any)
+        self.assertEqual(result.selected, [5])
 
     def test_range(self):
-        self.assertEqual(
-                parse_field('2-6', 0, 10),
-                [2, 3, 4, 5, 6])
+        result = parse_field('2-6', 0, 10)
+        self.assertFalse(result.is_any)
+        self.assertEqual(result. selected, [2, 3, 4, 5, 6])
 
     def test_all(self):
-        self.assertEqual(
-                parse_field('0-10', 0, 10),
-                [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        result = parse_field('0-10', 0, 10)
+        self.assertFalse(result.is_any)
+        self.assertEqual(result.selected, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
     def test_step_all(self):
-        self.assertEqual(
-                parse_field('*/3', 0, 10),
-                [0, 3, 6, 9])
+        result = parse_field('*/3', 0, 10)
+        self.assertFalse(result.is_any)
+        self.assertEqual(result.selected, [0, 3, 6, 9])
 
     def test_step_begin(self):
-        self.assertEqual(
-                parse_field('1/3', 0, 10),
-                [1, 4, 7, 10])
+        result = parse_field('1/3', 0, 10)
+        self.assertFalse(result.is_any)
+        self.assertEqual(result.selected, [1, 4, 7, 10])
 
     def test_step_range(self):
-        self.assertEqual(
-                parse_field('1-9/3', 0, 10),
-                [1, 4, 7])
+        result = parse_field('1-9/3', 0, 10)
+        self.assertFalse(result.is_any)
+        self.assertEqual(result.selected, [1, 4, 7])
 
     def test_multi(self):
-        self.assertEqual(
-                parse_field('0,1', 0, 1),
-                [0, 1])
+        result = parse_field('0,1', 0, 1)
+        self.assertFalse(result.is_any)
+        self.assertEqual(result.selected, [0, 1])
 
     def test_multi_sort(self):
-        self.assertEqual(
-                parse_field('1,0', 0, 10),
-                [0, 1])
+        result = parse_field('1,0', 0, 10)
+        self.assertFalse(result.is_any)
+        self.assertEqual(result.selected, [0, 1])
 
     def test_multi_uniq(self):
-        self.assertEqual(
-                parse_field('0,0,0', 0, 10),
-                [0])
+        result = parse_field('0,0,0', 0, 10)
+        self.assertFalse(result.is_any)
+        self.assertEqual(result.selected, [0])
 
     def test_multi_step(self):
-        self.assertEqual(
-                parse_field('0/3,1/3', 0, 10),
-                [0, 1, 3, 4, 6, 7, 9, 10])
+        result = parse_field('0/3,1/3', 0, 10)
+        self.assertFalse(result.is_any)
+        self.assertEqual(result.selected, [0, 1, 3, 4, 6, 7, 9, 10])
 
     def test_multi_with_any(self):
         field_list = [
@@ -73,13 +73,15 @@ class ParseFieldTest(unittest.TestCase):
                 '*,0/3']
         for field in field_list:
             with self.subTest(field=field):
+                result = parse_field(field, 0, 10)
+                self.assertTrue(result.is_any)
                 self.assertEqual(
-                        parse_field(field, 0, 10),
-                        None)
+                        result.selected,
+                        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
     def test_error_not_match(self):
-        with self.assertRaises(FieldParseError):
-            parse_field('0-1-2', 0, 10)
+        result = parse_field('0-1-2', 0, 10)
+        self.assertTrue(result.mismatched)
 
     def test_error_out_of_range(self):
         field_list = [
@@ -89,31 +91,31 @@ class ParseFieldTest(unittest.TestCase):
                 '1-11']
         for field in field_list:
             with self.subTest(field=field):
-                with self.assertRaises(FieldParseError):
-                    parse_field(field, 1, 10)
+                result = parse_field(field, 1, 10)
+                self.assertTrue(result.error)
 
     def test_error_step0(self):
-        with self.assertRaises(FieldParseError):
-            parse_field('*/0', 0, 10)
+        result = parse_field('*/0', 0, 10)
+        self.assertTrue(result.error)
 
     def test_error_invalid_range(self):
-        with self.assertRaises(FieldParseError):
-            parse_field('7-3', 0, 10)
+        result = parse_field('7-3', 0, 10)
+        self.assertTrue(result.error)
 
 
 class ParseFieldWithWordSet(unittest.TestCase):
     def test_single(self):
-        self.assertEqual(
-                parse_field('Jan', 1, 12, word_set=month_word_set()),
-                [1])
+        result = parse_field('Jan', 1, 12, word_set=month_word_set())
+        self.assertFalse(result.is_any)
+        self.assertEqual(result.selected, [1])
 
     def test_case_insensitive(self):
         for product in itertools.product('Ss', 'Uu', 'Nn'):
             field = ''.join(product)
             with self.subTest(field=field):
-                self.assertEqual(
-                    parse_field(field, 0, 6, word_set=weekday_word_set()),
-                    [0])
+                result = parse_field(field, 0, 6, word_set=weekday_word_set())
+                self.assertFalse(result.is_any)
+                self.assertEqual(result.selected, [0])
 
     def test_range(self):
         field_list = [
@@ -123,27 +125,27 @@ class ParseFieldWithWordSet(unittest.TestCase):
                 '1-5']
         for field in field_list:
             with self.subTest(field=field):
-                self.assertEqual(
-                        parse_field(field, 0, 6, word_set=weekday_word_set()),
-                        [1, 2, 3, 4, 5])
+                result = parse_field(field, 0, 6, word_set=weekday_word_set())
+                self.assertFalse(result.is_any)
+                self.assertEqual(result.selected, [1, 2, 3, 4, 5])
 
     def test_step(self):
-        self.assertEqual(
-                parse_field('Apr-Dec/2', 1, 12, word_set=month_word_set()),
-                [4, 6, 8, 10, 12])
+        result = parse_field('Apr-Dec/2', 1, 12, word_set=month_word_set())
+        self.assertFalse(result.is_any)
+        self.assertEqual(result.selected, [4, 6, 8, 10, 12])
 
     def test_mixin(self):
-        self.assertEqual(
-                parse_field('1,Feb', 1, 12, word_set=month_word_set()),
-                [1, 2])
+        result = parse_field('1,Feb', 1, 12, word_set=month_word_set())
+        self.assertFalse(result.is_any)
+        self.assertEqual(result.selected, [1, 2])
 
     def test_error_not_match(self):
-        with self.assertRaises(FieldParseError):
-            parse_field('JanFeb', 1, 12, word_set=month_word_set())
+        result = parse_field('JanFeb', 1, 12, word_set=month_word_set())
+        self.assertTrue(result.mismatched)
 
     def test_error_word_in_step(self):
-        with self.assertRaises(FieldParseError):
-            parse_field('*/Feb', 1, 12, word_set=month_word_set())
+        result = parse_field('*/Feb', 1, 12, word_set=month_word_set())
+        self.assertTrue(result.mismatched)
 
 
 class FieldTest(unittest.TestCase):
