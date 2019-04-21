@@ -36,6 +36,9 @@ class FieldParseResult(NamedTuple):
     mismatched: List[str]
     error: List[FieldElementParseError]
 
+    def is_completed(self) -> bool:
+        return not (self.mismatched or self.error)
+
 
 class FieldNext(NamedTuple):
     value: int
@@ -52,7 +55,7 @@ class Field:
         result = parse_field(field, min_, max_, word_set)
         self._is_any = result.is_any
         self._selected_list = result.selected
-        if result.mismatched or result.error:
+        if not result.is_completed():
             raise FieldParseError(
                     result.source,
                     result.mismatched,
