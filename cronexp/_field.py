@@ -45,21 +45,10 @@ class FieldNext(NamedTuple):
     move_up: bool
 
 
-class Field:
-    def __init__(
-            self,
-            field: str,
-            min_: int,
-            max_: int,
-            word_set: Optional[Dict[str, int]] = None) -> None:
-        result = parse_field(field, min_, max_, word_set)
-        self._is_any = result.is_any
-        self._selected_list = result.selected
-        if not result.is_completed():
-            raise FieldParseError(
-                    result.source,
-                    result.mismatched,
-                    result.error)
+class FieldBase:
+    def __init__(self, parse_result: FieldParseResult) -> None:
+        self._is_any = parse_result.is_any
+        self._selected_list = parse_result.selected
 
     @property
     def is_any(self) -> bool:
@@ -80,6 +69,22 @@ class Field:
 
     def max(self) -> int:
         return max(self._selected_list)
+
+
+class Field(FieldBase):
+    def __init__(
+            self,
+            field: str,
+            min_: int,
+            max_: int,
+            word_set: Optional[Dict[str, int]] = None) -> None:
+        parse_result = parse_field(field, min_, max_, word_set=word_set)
+        super().__init__(parse_result)
+        if not parse_result.is_completed():
+            raise FieldParseError(
+                    parse_result.source,
+                    parse_result.mismatched,
+                    parse_result.error)
 
 
 def evaluate_field(
