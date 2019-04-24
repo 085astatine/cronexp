@@ -54,12 +54,11 @@ class FieldBase:
     def is_any(self) -> bool:
         return self._is_any
 
-    def next(self, value: int) -> FieldNext:
+    def next_value(self, value: int) -> Optional[int]:
         for i in self._selected_list:
             if value < i:
-                return FieldNext(value=i, move_up=False)
-        else:
-            return FieldNext(value=self.min(), move_up=True)
+                return i
+        return None
 
     def is_selected(self, value: int) -> bool:
         return value in self._selected_list
@@ -85,6 +84,12 @@ class Field(FieldBase):
                     parse_result.source,
                     parse_result.mismatched,
                     parse_result.error)
+
+    def next(self, value: int) -> FieldNext:
+        next_value = self.next_value(value)
+        return FieldNext(
+            value=next_value if next_value is not None else self.min(),
+            move_up=next_value is None)
 
 
 def evaluate_field(
