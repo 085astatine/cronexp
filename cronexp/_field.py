@@ -54,9 +54,9 @@ class FieldBase:
     def is_any(self) -> bool:
         return self._is_any
 
-    def next_value(self, value: int) -> Optional[int]:
+    def next_value(self, value: Optional[int]) -> Optional[int]:
         for i in self._selected_list:
-            if value < i:
+            if value is None or value < i:
                 return i
         return None
 

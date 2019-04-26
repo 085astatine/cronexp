@@ -56,7 +56,7 @@ class DayOfMonthField(FieldBase):
     def is_blank(self) -> bool:
         return self._is_blank
 
-    def next(self, year: int, month: int, day: int) -> Optional[int]:
+    def next(self, year: int, month: int, day: Optional[int]) -> Optional[int]:
         lastday = calendar.monthrange(year, month)[1]
         if self._non_standard:
             if self.is_blank:
@@ -74,16 +74,16 @@ class DayOfMonthField(FieldBase):
             return result if result is not None and result <= lastday else None
 
 
-def day_of_month_l(year: int, month: int, day: int) -> Optional[int]:
+def day_of_month_l(year: int, month: int, day: Optional[int]) -> Optional[int]:
     lastday = calendar.monthrange(year, month)[1]
-    return lastday if lastday > day else None
+    return lastday if day is None or day < lastday else None
 
 
 def day_of_month_w(
         target: int,
         year: int,
         month: int,
-        day: int) -> Optional[int]:
+        day: Optional[int]) -> Optional[int]:
     lastday = calendar.monthrange(year, month)[1]
     result = min(target, lastday)
     weekday = calendar.weekday(year, month, result)
@@ -94,4 +94,4 @@ def day_of_month_w(
             result += -1 if weekday == 5 else -2
         else:
             result += -1 if weekday == 5 else 1
-    return result if result > day else None
+    return result if day is None or day < result else None
