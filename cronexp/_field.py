@@ -122,7 +122,8 @@ def parse_field(
         field: str,
         min_: int,
         max_: int,
-        word_set: Optional[Dict[str, int]] = None) -> FieldParseResult:
+        word_set: Optional[Dict[str, int]] = None,
+        use_slash: bool = True) -> FieldParseResult:
     is_any = False
     selected: List[int] = []
     mismatched: List[str] = []
@@ -162,6 +163,9 @@ def parse_field(
                         if match.group('step') is not None else None)
         # mismatched
         if match is None:
+            mismatched.append(element)
+            continue
+        if not use_slash and step is not None:
             mismatched.append(element)
             continue
         # error check

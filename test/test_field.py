@@ -118,6 +118,12 @@ class ParseFieldTest(unittest.TestCase):
         self.assertFalse(result.is_completed())
         self.assertTrue(result.error)
 
+    def test_error_not_use_slash(self):
+        field = '*/5'
+        result = parse_field(field, 0, 10, use_slash=False)
+        self.assertFalse(result.is_completed())
+        self.assertIn(field, result.mismatched)
+
 
 class ParseFieldWithWordSet(unittest.TestCase):
     def test_single(self):
