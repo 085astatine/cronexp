@@ -133,34 +133,21 @@ def parse_field(
         end: Optional[int] = None
         step: Optional[int] = None
         match = re.match(
-                r'^(\*|(?P<begin>[0-9]+)(|-(?P<end>[0-9]+)))'
-                r'(|/(?P<step>[0-9]+))$',
+                r'^(\*|(?P<begin>({0}[0-9]+))(|-(?P<end>({0}[0-9]+))))'
+                r'(|/(?P<step>[0-9]+))$'
+                .format('(?i:{0})|'.format('|'.join(word_set.keys()))
+                        if word_set is not None else ''),
                 element)
         if match:
-            begin = (int(match.group('begin'))
-                     if match.group('begin') is not None else None)
-            end = (int(match.group('end'))
-                   if match.group('end') is not None else None)
+            begin, end = map(
+                    lambda x: (
+                            None if x is None
+                            else int(x) if x.isdigit()
+                            else word_set[x.lower()] if word_set
+                            else None),
+                    [match.group('begin'), match.group('end')])
             step = (int(match.group('step'))
                     if match.group('step') is not None else None)
-        elif word_set:
-            match = re.match(
-                    r'^(?P<begin>({0}|[0-9]+))(|-(?P<end>({0}|[0-9]+)))'
-                    r'(|/(?P<step>[0-9]+))$'
-                    .format('|'.join(word_set.keys())),
-                    element,
-                    re.IGNORECASE)
-            if match:
-                begin = (int(word_set.get(
-                                match.group('begin').lower(),
-                                match.group('begin')))
-                         if match.group('begin') is not None else None)
-                end = (int(word_set.get(
-                                match.group('end').lower(),
-                                match.group('end')))
-                       if match.group('end') is not None else None)
-                step = (int(match.group('step'))
-                        if match.group('step') is not None else None)
         # mismatched
         if match is None:
             mismatched.append(element)
