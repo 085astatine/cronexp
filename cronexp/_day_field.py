@@ -58,20 +58,16 @@ class DayOfMonthField(FieldBase):
 
     def next(self, year: int, month: int, day: Optional[int]) -> Optional[int]:
         lastday = calendar.monthrange(year, month)[1]
+        target: List[Optional[int]] = [self.next_value(day)]
         if self._non_standard:
             if self.is_blank:
                 return None
-            target: List[Optional[int]] = []
-            target.append(self.next_value(day))
             if self._l:
                 target.append(day_of_month_l(year, month, day))
             target.extend(day_of_month_w(w, year, month, day) for w in self._w)
-            return min(
-                    (x for x in target if x is not None and x <= lastday),
-                    default=None)
-        else:
-            result = self.next_value(day)
-            return result if result is not None and result <= lastday else None
+        return min(
+                filter(lambda x: x is not None and x <= lastday, target),
+                default=None)
 
 
 def day_of_month_l(year: int, month: int, day: Optional[int]) -> Optional[int]:
