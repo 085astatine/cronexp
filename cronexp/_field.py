@@ -133,21 +133,13 @@ def parse_field(
         end: Optional[int] = None
         step: Optional[int] = None
         match = re.match(
-                r'^(\*|(?P<begin>({0}[0-9]+))(|-(?P<end>({0}[0-9]+))))'
+                r'^(\*|(?P<begin>{0})(|-(?P<end>{0})))'
                 r'(|/(?P<step>[0-9]+))$'
-                .format('{0}|'.format('|'.join(
-                            f'{key.lower()}|{key.upper()}|{key.title()}'
-                            for key in word_set.keys()))
-                        if word_set else ''),
+                .format(word_set_to_regex(word_set)),
                 element)
         if match:
-            begin, end = map(
-                    lambda x: (
-                            None if x is None
-                            else int(x) if x.isdigit()
-                            else word_set[x.lower()] if word_set
-                            else None),
-                    [match.group('begin'), match.group('end')])
+            begin = read_word(match.group('begin'), word_set)
+            end = read_word(match.group('end'), word_set)
             step = (int(match.group('step'))
                     if match.group('step') is not None else None)
         # mismatched
@@ -218,3 +210,21 @@ def weekday_word_set() -> Dict[str, int]:
             'thu': 4,
             'fri': 5,
             'sat': 6}
+
+
+def word_set_to_regex(word_set: Optional[Dict[str, int]]) -> str:
+    return (r'({0}|[0-9]+)'.format(
+                '|'.join(f'{x.lower()}|{x.upper()}|{x.title()}'
+                         for x in word_set.keys()))
+            if word_set else r'[0-9]+')
+
+
+def read_word(
+        word: Optional[str],
+        word_set: Optional[Dict[str, int]]) -> Optional[int]:
+    if word is not None:
+        if word.isdigit():
+            return int(word)
+        if word_set:
+            return word_set[word.lower()]
+    return None
