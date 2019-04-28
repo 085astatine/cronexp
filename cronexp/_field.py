@@ -135,8 +135,10 @@ def parse_field(
         match = re.match(
                 r'^(\*|(?P<begin>({0}[0-9]+))(|-(?P<end>({0}[0-9]+))))'
                 r'(|/(?P<step>[0-9]+))$'
-                .format('(?i:{0})|'.format('|'.join(word_set.keys()))
-                        if word_set is not None else ''),
+                .format('{0}|'.format('|'.join(
+                            f'{key.lower()}|{key.upper()}|{key.title()}'
+                            for key in word_set.keys()))
+                        if word_set else ''),
                 element)
         if match:
             begin, end = map(

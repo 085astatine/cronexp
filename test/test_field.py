@@ -133,13 +133,21 @@ class ParseFieldWithWordSet(unittest.TestCase):
         self.assertEqual(result.selected, [1])
 
     def test_case_insensitive(self):
-        for product in itertools.product('Ss', 'Uu', 'Nn'):
-            field = ''.join(product)
+        match_list = ['sun', 'Sun', 'SUN']
+        mismatch_list = [
+                x for x in map(''.join, itertools.product('Ss', 'Uu', 'Nn'))
+                if x not in match_list]
+        for field in match_list:
             with self.subTest(field=field):
                 result = parse_field(field, 0, 6, word_set=weekday_word_set())
                 self.assertTrue(result.is_completed())
                 self.assertFalse(result.is_any)
                 self.assertEqual(result.selected, [0])
+        for field in mismatch_list:
+            with self.subTest(field=field):
+                result = parse_field(field, 0, 6, word_set=weekday_word_set())
+                self.assertFalse(result.is_completed())
+                self.assertIn(field, result.mismatched)
 
     def test_range(self):
         field_list = [
