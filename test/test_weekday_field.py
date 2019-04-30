@@ -5,8 +5,9 @@ import datetime
 import itertools
 import math
 import unittest
-from cronexp._field import weekday_word_set
-from cronexp._weekday_field import day_of_week_l, day_of_week_sharp
+from cronexp._field import FieldParseError, weekday_word_set
+from cronexp._weekday_field import (
+        DayOfWeekField, day_of_week_l, day_of_week_sharp)
 
 
 class DayOfWeekLTest(unittest.TestCase):
@@ -83,3 +84,143 @@ class DayOfWeekSharpTest(unittest.TestCase):
                                     month,
                                     day),
                             expected)
+
+
+class DayOfWeekFieldTest(unittest.TestCase):
+    def test_normal(self):
+        field = DayOfWeekField('Mon,Wed,Fri', non_standard=False)
+        year = 2019
+        init_date = datetime.date(year, 1, 1)
+        expected_list = list(
+                filter(lambda date: date.weekday() in [0, 2, 4],
+                       map(lambda i: init_date + datetime.timedelta(days=i),
+                           range(0, 365))))
+        for month, day in itertools.product(
+                range(1, 13),
+                (None, *range(1, 32))):
+            expected = min(
+                    map(lambda date: date.day,
+                        filter(lambda date: (
+                                    date.month == month
+                                    and (day is None or day < date.day)),
+                               expected_list)),
+                    default=None)
+            with self.subTest(year=year, month=month, day=day):
+                self.assertEqual(field.next(year, month, day), expected)
+
+    def test_blank(self):
+        field = DayOfWeekField('?', non_standard=True)
+        self.assertTrue(field.is_blank)
+        self.assertEqual(field.next(2019, 1, 1), None)
+
+    def test_l(self):
+        field = DayOfWeekField('MonL,ThuL', non_standard=True)
+        year = 2019
+        expected_table = [
+                [28, 31],  # 2019/01
+                [25, 28],  # 2019/02
+                [25, 28],  # 2019/03
+                [25, 29],  # 2019/04
+                [27, 30],  # 2019/05
+                [24, 27],  # 2019/06
+                [25, 29],  # 2019/07
+                [26, 29],  # 2019/08
+                [26, 30],  # 2019/09
+                [28, 31],  # 2019/10
+                [25, 28],  # 2019/11
+                [26, 30]]  # 2019/12
+        for month, day in itertools.product(
+                range(1, 13),
+                (None, *range(1, 32))):
+            expected = min(
+                    filter(lambda x: day is None or day < x,
+                           expected_table[month - 1]),
+                    default=None)
+            with self.subTest(year=year, month=month, day=day):
+                self.assertEqual(field.next(year, month, day), expected)
+
+    def test_sharp(self):
+        field = DayOfWeekField(
+                'Mon#1,Fri#1,Tue#2,Thu#2,Wed#3,Sun#4,Sat#4,Mon#5,Fri#5',
+                non_standard=True)
+        year = 2019
+        expected_table = [
+                [4, 7, 8, 10, 16, 26, 27],  # 2019/01
+                [1, 4, 12, 14, 20, 23, 24],  # 2019/02
+                [1, 4, 12, 14, 20, 23, 24, 29],  # 2019/03
+                [1, 5, 9, 11, 17, 27, 28, 29],  # 2019/04
+                [3, 6, 9, 14, 15, 25, 26, 31],  # 2019/05
+                [3, 7, 11, 13, 19, 22, 23],  # 2019/06
+                [1, 5, 9, 11, 17, 27, 28, 29],  # 2019/07
+                [2, 5, 8, 13, 21, 24, 25, 30],  # 2019/08
+                [2, 6, 10, 12, 18, 22, 28, 30],  # 2019/09
+                [4, 7, 8, 10, 16, 26, 27],  # 2019/10
+                [1, 4, 12, 14, 20, 23, 24, 29],  # 2019/11
+                [2, 6, 10, 12, 18, 22, 28, 30]]  # 2019/12
+        for month, day in itertools.product(
+                range(1, 13),
+                (None, *range(1, 32))):
+            expected = min(
+                    filter(lambda x: day is None or day < x,
+                           expected_table[month - 1]),
+                    default=None)
+            with self.subTest(year=year, month=month, day=day):
+                self.assertEqual(field.next(year, month, day), expected)
+
+    def test_next(self):
+        field = DayOfWeekField('Sun,Sat#2,Sat#4,FriL', non_standard=True)
+        year = 2019
+        expected_table = [
+                [6, 12, 13, 20, 25, 26, 27],  # 2019/01
+                [3, 9, 10, 17, 22, 23, 24],  # 2019/02
+                [3, 9, 10, 17, 23, 24, 29, 31],  # 2019/03
+                [7, 13, 14, 21, 26, 27, 28],  # 2019/04
+                [5, 11, 12, 19, 25, 26, 31],  # 2019/05
+                [2, 8, 9, 16, 22, 23, 28, 30],  # 2019/06
+                [7, 13, 14, 21, 26, 27, 28],  # 2019/07
+                [4, 10, 11, 18, 24, 25, 30],  # 2019/08
+                [1, 8, 14, 15, 22, 27, 28, 29],  # 2019/09
+                [6, 12, 13, 20, 25, 26, 27],  # 2019/10
+                [3, 9, 10, 17, 23, 24, 29],  # 2019/11
+                [1, 8, 14, 15, 22, 27, 28, 29]]  # 2019/12
+        for month, day in itertools.product(
+                range(1, 13),
+                (None, *range(1, 32))):
+            expected = min(
+                    filter(lambda x: day is None or day < x,
+                           expected_table[month - 1]),
+                    default=None)
+            with self.subTest(year=year, month=month, day=day):
+                self.assertEqual(field.next(year, month, day), expected)
+
+    def test_error_not_question_only(self):
+        field_list = [
+                '*,?',
+                '?,*',
+                '?,Sat',
+                '?,FriL',
+                '?,Mon#1']
+        for field in field_list:
+            with self.subTest(field=field):
+                with self.assertRaises(FieldParseError):
+                    DayOfWeekField(field, non_standard=True)
+
+    def test_error_invalid_l(self):
+        for i in range(0, 10):
+            field = '{0}L'.format(i)
+            with self.subTest(field=field):
+                if 0 <= i <= 6:
+                    DayOfWeekField(field, non_standard=True)
+                else:
+                    with self.assertRaises(FieldParseError):
+                        DayOfWeekField(field, non_standard=True)
+
+    def test_error_invalid_sharp(self):
+        for i, k in itertools.product(range(0, 10), range(0, 10)):
+            field = '{0}#{1}'.format(i, k)
+            with self.subTest(field=field):
+                if 0 <= i <= 6 and 1 <= k <= 5:
+                    DayOfWeekField(field, non_standard=True)
+                else:
+                    with self.assertRaises(FieldParseError):
+                        DayOfWeekField(field, non_standard=True)
