@@ -22,21 +22,18 @@ class DayOfWeekLTest(unittest.TestCase):
                 'fri': [25, 22, 29, 26, 31, 28, 26, 30, 27, 25, 29, 27],
                 'sat': [26, 23, 30, 27, 25, 29, 27, 31, 28, 26, 30, 28]}
         for name, weekday in weekday_word_set().items():
-            for month, day in itertools.product(
-                    range(1, 13),
-                    (None, *range(1, 32))):
-                result = last_weekday_list[name][month - 1]
-                self.assertEqual(
-                        calendar.weekday(year, month, result),
-                        (weekday - 1) % 7)
+            for month in range(1, 13):
+                expected = last_weekday_list[name][month - 1]
                 with self.subTest(
                         weekday=name,
                         year=year,
-                        month=month,
-                        day=day):
+                        month=month):
                     self.assertEqual(
-                            day_of_week_l(weekday, year, month, day),
-                            result if day is None or day < result else None)
+                            calendar.weekday(year, month, expected),
+                            (weekday - 1) % 7)
+                    self.assertEqual(
+                            day_of_week_l(weekday, year, month),
+                            expected)
 
 
 class DayOfWeekSharpTest(unittest.TestCase):
@@ -53,36 +50,28 @@ class DayOfWeekSharpTest(unittest.TestCase):
         for (name, weekday), week_number in itertools.product(
                 weekday_word_set().items(),
                 range(1, 6)):
-            for month, day in itertools.product(
-                    range(1, 13),
-                    (None, *range(1, 32))):
-                result = (
+            for month in range(1, 13):
+                expected = (
                         first_weekday_list[name][month - 1]
                         + 7 * (week_number - 1))
                 lastday = calendar.monthrange(year, month)[1]
-                if lastday < result:
-                    result = None
+                if lastday < expected:
+                    expected = None
                 else:
                     self.assertEqual(
-                            calendar.weekday(year, month, result),
+                            calendar.weekday(year, month, expected),
                             (weekday - 1) % 7)
                 with self.subTest(
                         weekday=name,
                         week_number=week_number,
                         year=year,
-                        month=month,
-                        day=day):
-                    expected = (
-                        None if result is None
-                        else result if day is None or day < result
-                        else None)
+                        month=month):
                     self.assertEqual(
                             day_of_week_sharp(
                                     weekday,
                                     week_number,
                                     year,
-                                    month,
-                                    day),
+                                    month),
                             expected)
 
 

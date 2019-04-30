@@ -63,23 +63,21 @@ class DayOfMonthField(FieldBase):
             if self.is_blank:
                 return None
             if self._l:
-                target.append(day_of_month_l(year, month, day))
-            target.extend(day_of_month_w(w, year, month, day) for w in self._w)
+                target.append(lastday)
+            target.extend(day_of_month_w(w, year, month) for w in self._w)
         return min(
-                filter(lambda x: x is not None and x <= lastday, target),
+                filter(lambda x: (
+                            x is not None
+                            and x <= lastday
+                            and (day is None or day < x)),
+                       target),
                 default=None)
-
-
-def day_of_month_l(year: int, month: int, day: Optional[int]) -> Optional[int]:
-    lastday = calendar.monthrange(year, month)[1]
-    return lastday if day is None or day < lastday else None
 
 
 def day_of_month_w(
         target: int,
         year: int,
-        month: int,
-        day: Optional[int]) -> Optional[int]:
+        month: int) -> int:
     lastday = calendar.monthrange(year, month)[1]
     result = min(target, lastday)
     weekday = calendar.weekday(year, month, result)
@@ -90,4 +88,4 @@ def day_of_month_w(
             result += -1 if weekday == 5 else -2
         else:
             result += -1 if weekday == 5 else 1
-    return result if day is None or day < result else None
+    return result

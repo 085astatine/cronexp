@@ -5,76 +5,25 @@ import datetime
 import itertools
 import math
 import unittest
-from cronexp._day_field import DayOfMonthField, day_of_month_l, day_of_month_w
+from cronexp._day_field import DayOfMonthField, day_of_month_w
 from cronexp._field import FieldParseError
-
-
-class DayOfMonthLTest(unittest.TestCase):
-    def test_l(self):
-        year = 2019
-        month = 2
-        for day in (None, *range(1, 32)):
-            with self.subTest(year=year, month=month, day=day):
-                self.assertEqual(
-                        day_of_month_l(year, month, day),
-                        28 if day is None or day < 28 else None)
 
 
 class DayOfMonthWTest(unittest.TestCase):
     def test_weekday(self):
-        target = 14
-        year = 2019
-        month = 2
-        for day in (None, *range(1, 32)):
-            result = target
-            with self.subTest(year=year, month=month, day=day):
-                self.assertEqual(
-                        day_of_month_w(target, year, month, day),
-                        result if day is None or day < result else None)
+        self.assertEqual(day_of_month_w(14, 2019, 2), 14)
 
     def test_saturday(self):
-        target = 23
-        year = 2019
-        month = 11
-        for day in (None, *range(1, 32)):
-            result = 22
-            with self.subTest(year=year, month=month, day=day):
-                self.assertEqual(
-                        day_of_month_w(target, year, month, day),
-                        result if day is None or day < result else None)
+        self.assertEqual(day_of_month_w(23, 2019, 11), 22)
 
     def test_sunday(self):
-        target = 11
-        year = 2019
-        month = 8
-        for day in (None, *range(1, 32)):
-            result = 12
-            with self.subTest(year=year, month=month, day=day):
-                self.assertEqual(
-                        day_of_month_w(target, year, month, day),
-                        result if day is None or day < result else None)
+        self.assertEqual(day_of_month_w(11, 2019, 8), 12)
 
     def test_1st(self):
-        target = 1
-        year = 2019
-        month = 6
-        for day in (None, *range(1, 32)):
-            result = 3
-            with self.subTest(year=year, month=month, day=day):
-                self.assertEqual(
-                        day_of_month_w(target, year, month, day),
-                        result if day is None or day < result else None)
+        self.assertEqual(day_of_month_w(1, 2019, 6), 3)
 
     def test_last(self):
-        target = 31
-        year = 2019
-        month = 3
-        for day in (None, *range(1, 32)):
-            result = 29
-            with self.subTest(year=year, month=month, day=day):
-                self.assertEqual(
-                        day_of_month_w(target, year, month, day),
-                        result if day is None or day < result else None)
+        self.assertEqual(day_of_month_w(31, 2019, 3), 29)
 
 
 class DayOfMonthFieldTest(unittest.TestCase):

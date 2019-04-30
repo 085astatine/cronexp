@@ -105,37 +105,33 @@ class DayOfWeekField(FieldBase):
         if self._non_standard:
             if self._is_blank:
                 return None
-            target.extend(day_of_week_l(l, year, month, day) for l in self._l)
+            target.extend(day_of_week_l(l, year, month) for l in self._l)
             target.extend(
-                    day_of_week_sharp(weekday, week_number, year, month, day)
+                    day_of_week_sharp(weekday, week_number, year, month)
                     for weekday, week_number in self._sharp)
         return min(
-                filter(lambda x: x is not None and x <= lastday, target),
+                filter(lambda x: x is not None and (day is None or day < x),
+                       target),
                 default=None)
 
 
 def day_of_week_l(
         weekday: int,
         year: int,
-        month: int,
-        day: Optional[int]) -> Optional[int]:
+        month: int) -> int:
     # weekday 0: Sunday, ... 6: Saturday
     # init_weekday: 0: Monday, ... 6: Sunday
     init_weekday, lastday = calendar.monthrange(year, month)
-    result = lastday - (init_weekday + lastday - weekday) % 7
-    return result if day is None or day < result else None
+    return lastday - (init_weekday + lastday - weekday) % 7
 
 
 def day_of_week_sharp(
         weekday: int,
         week_number: int,
         year: int,
-        month: int,
-        day: Optional[int]) -> Optional[int]:
+        month: int) -> Optional[int]:
     # weekday 0: Sunday, ... 6: Saturday
     # init_weekday: 0: Monday, ... 6: Sunday
     init_weekday, lastday = calendar.monthrange(year, month)
     result = 1 + (weekday - init_weekday - 1) % 7 + 7 * (week_number - 1)
-    if result <= lastday:
-        return result if day is None or day < result else None
-    return None
+    return result if result <= lastday else None
