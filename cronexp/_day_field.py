@@ -42,6 +42,20 @@ class DayOfMonthField:
                        target),
                 default=None)
 
+    def is_selected(self, year: int, month: int, day: int) -> bool:
+        if self._non_standard and self._is_blank:
+            return False
+        lastday = calendar.monthrange(year, month)[1]
+        if 1 <= day <= lastday:
+            if day in self._value:
+                return True
+            if self._non_standard:
+                if self._l and day == lastday:
+                    return True
+                if day in [day_of_month_w(w, year, month) for w in self._w]:
+                    return True
+        return False
+
 
 def day_of_month_w(
         target: int,

@@ -67,6 +67,23 @@ class DayOfWeekField:
                        target),
                 default=None)
 
+    def is_selected(self, year: int, month: int, day: int) -> bool:
+        if self._non_standard and self._is_blank:
+            return False
+        lastday = calendar.monthrange(year, month)[1]
+        if 1 <= day <= lastday:
+            weekday = (calendar.weekday(year, month, day) + 1) % 7
+            if weekday in self._value:
+                return True
+            if self._non_standard:
+                if day in [day_of_week_l(weekday, year, month)
+                           for weekday in self._l]:
+                    return True
+                if day in [day_of_week_hash(weekday, week_number, year, month)
+                           for weekday, week_number in self._hash]:
+                    return True
+        return False
+
 
 def day_of_week_l(
         weekday: int,
