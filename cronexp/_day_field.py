@@ -1,56 +1,24 @@
 # -*- coding: utf-8 -*-
 
 import calendar
-import re
 from typing import List, Optional
-from ._field import (
-        FieldBase, FieldParseError, FieldElementParseError, parse_field)
+from ._field_parser import FieldParser
 
 
-class DayOfMonthField(FieldBase):
+class DayOfMonthField:
     def __init__(self, field: str, non_standard: bool) -> None:
-        # initialize base
-        min_ = 1
-        max_ = 31
-        result = parse_field(field, min_, max_)
-        super().__init__(result)
-        # additional variables
         self._non_standard = non_standard
-        self._is_blank = False
-        self._l = False
-        self._w: List[int] = []
-        # parse not standard
-        mismatched = result.mismatched
-        error = result.error
-        if self._non_standard:
-            mismatched = []
-            for element in result.mismatched:
-                w_match = re.match('^(?P<target>[0-9]+)W$', element)
-                if element == '?':
-                    self._is_blank = True
-                    if field != '?':
-                        error.append(FieldElementParseError(
-                                element,
-                                'there is a charactor other than "?"'))
-                elif element == 'L':
-                    self._l = True
-                elif w_match:
-                    w_target = int(w_match.group('target'))
-                    if min_ <= w_target <= max_:
-                        self._w.append(w_target)
-                    else:
-                        error.append(FieldElementParseError(
-                                element,
-                                '{0} is out of range({1}...{2})'
-                                .format(w_target, min_, max_)))
-                else:
-                    mismatched.append(element)
-        # error check
-        if mismatched or error:
-            raise FieldParseError(
-                    field=field,
-                    mismatched=mismatched,
-                    parse_error=error)
+        parser = FieldParser(field, 1, 31)
+        result = parser.parse_day_field(non_standard=non_standard)
+        self._is_any = result.is_any
+        self._is_blank = result.is_blank
+        self._value = result.value
+        self._l = result.last
+        self._w = result.w
+
+    @property
+    def is_any(self) -> bool:
+        return self._is_any
 
     @property
     def is_blank(self) -> bool:
@@ -58,7 +26,8 @@ class DayOfMonthField(FieldBase):
 
     def next(self, year: int, month: int, day: Optional[int]) -> Optional[int]:
         lastday = calendar.monthrange(year, month)[1]
-        target: List[Optional[int]] = [self.next_value(day)]
+        target: List[Optional[int]] = []
+        target.extend(self._value)
         if self._non_standard:
             if self.is_blank:
                 return None

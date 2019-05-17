@@ -6,7 +6,6 @@ import itertools
 import math
 import unittest
 from cronexp._day_field import DayOfMonthField, day_of_month_w
-from cronexp._field import FieldParseError
 
 
 class DayOfMonthWTest(unittest.TestCase):
@@ -113,23 +112,3 @@ class DayOfMonthFieldTest(unittest.TestCase):
                     break
             with self.subTest(year=year, month=month, day=day):
                 self.assertEqual(field.next(year, month, day), expected)
-
-    def test_error_not_question_only(self):
-        field_list = [
-                '*,?',
-                '?,*',
-                '1,?',
-                '?,L']
-        for field in field_list:
-            with self.subTest(field=field):
-                with self.assertRaises(FieldParseError):
-                    DayOfMonthField(field, non_standard=True)
-
-    def test_error_invalid_w(self):
-        field_list = [
-                '0W',
-                '32W']
-        for field in field_list:
-            with self.subTest(field=field):
-                with self.assertRaises(FieldParseError):
-                    DayOfMonthField(field, non_standard=True)
