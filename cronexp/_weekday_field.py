@@ -1,78 +1,29 @@
 # -*- coding: utf-8 -*-
 
 import calendar
-import re
-from typing import List, Optional, Tuple
-from ._field import (
-        FieldBase, FieldParseError, FieldElementParseError,
-        parse_field, weekday_word_set, word_set_to_regex, read_word)
+from typing import List, Optional
+from ._field_parser import FieldParser, weekday_word_set
 
 
-class DayOfWeekField(FieldBase):
+class DayOfWeekField:
     def __init__(self, field: str, non_standard: bool) -> None:
-        # initialize base
+        self._non_standard = non_standard
         min_ = 0
         max_ = 6
         word_set = weekday_word_set()
-        result = parse_field(field, min_, max_, word_set=word_set)
-        super().__init__(result)
-        # additional variables
-        self._non_standard = non_standard
-        self._is_blank = False
-        self._l: List[int] = []
-        self._sharp: List[Tuple[int, int]] = []
-        # parse not standard
-        mismatched = result.mismatched
-        error = result.error
-        if self._non_standard:
-            mismatched = []
-            for element in result.mismatched:
-                l_match = re.match(
-                        r'^(?P<weekday>{0})L$'
-                        .format(word_set_to_regex(word_set)),
-                        element)
-                sharp_match = re.match(
-                        r'^(?P<weekday>{0})#(?P<week_number>[0-9]+)$'
-                        .format(word_set_to_regex(word_set)),
-                        element)
-                if element == '?':
-                    self._is_blank = True
-                    if field != '?':
-                        error.append(FieldElementParseError(
-                                element,
-                                'there is a charactor other than "?"'))
-                elif l_match:
-                    weekday = read_word(l_match.group('weekday'), word_set)
-                    if weekday is not None and min_ <= weekday <= max_:
-                        self._l.append(weekday)
-                    else:
-                        error.append(FieldElementParseError(
-                                element,
-                                '{0} is out of range({1}...{2})'
-                                .format(weekday, min_, max_)))
-                elif sharp_match:
-                    weekday = read_word(sharp_match.group('weekday'), word_set)
-                    week_number = int(sharp_match.group('week_number'))
-                    if weekday is None or not min_ <= weekday <= max_:
-                        error.append(FieldElementParseError(
-                                element,
-                                '{0} is out of range({1}...{2})'
-                                .format(weekday, min_, max_)))
-                    elif not 1 <= week_number <= 5:
-                        error.append(FieldElementParseError(
-                                element,
-                                '{0} is out of range({1}...{2})'
-                                .format(week_number, 1, 5)))
-                    else:
-                        self._sharp.append((weekday, week_number))
-                else:
-                    mismatched.append(element)
-        # error check
-        if mismatched or error:
-            raise FieldParseError(
-                    field=field,
-                    mismatched=mismatched,
-                    parse_error=error)
+        parser = FieldParser(field, min_, max_, word_set=word_set)
+        result = parser.parse_weekday_field(
+                non_standard=non_standard,
+                use_slash=True)
+        self._is_any = result.is_any
+        self._is_blank = result.is_blank
+        self._value = result.value
+        self._l = result.last
+        self._sharp = result.hash
+
+    @property
+    def is_any(self) -> bool:
+        return self._is_any
 
     @property
     def is_blank(self) -> bool:
@@ -85,7 +36,7 @@ class DayOfWeekField(FieldBase):
 
         def next_day(day_: Optional[int]) -> Optional[int]:
             if day_ is None:
-                if self.is_selected(init_weekday):
+                if init_weekday in self._value:
                     return 1
                 day_ = 1
                 weekday = init_weekday
@@ -93,9 +44,11 @@ class DayOfWeekField(FieldBase):
                 return None
             else:
                 weekday = (init_weekday + day_ - 1) % 7
-            next_weekday = self.next_value(weekday)
+            next_weekday = min(
+                    filter(lambda x: x is None or x > weekday, self._value),
+                    default=None)
             if next_weekday is None:
-                next_weekday = self.next_value(None)
+                next_weekday = min(self._value, default=None)
                 if next_weekday is None:
                     return None
             day_ += 7 - (weekday - next_weekday) % 7

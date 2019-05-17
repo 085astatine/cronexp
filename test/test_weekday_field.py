@@ -5,7 +5,7 @@ import datetime
 import itertools
 import math
 import unittest
-from cronexp._field import FieldParseError, weekday_word_set
+from cronexp._field_parser import weekday_word_set
 from cronexp._weekday_field import (
         DayOfWeekField, day_of_week_l, day_of_week_sharp)
 
@@ -181,35 +181,3 @@ class DayOfWeekFieldTest(unittest.TestCase):
                     default=None)
             with self.subTest(year=year, month=month, day=day):
                 self.assertEqual(field.next(year, month, day), expected)
-
-    def test_error_not_question_only(self):
-        field_list = [
-                '*,?',
-                '?,*',
-                '?,Sat',
-                '?,FriL',
-                '?,Mon#1']
-        for field in field_list:
-            with self.subTest(field=field):
-                with self.assertRaises(FieldParseError):
-                    DayOfWeekField(field, non_standard=True)
-
-    def test_error_invalid_l(self):
-        for i in range(0, 10):
-            field = '{0}L'.format(i)
-            with self.subTest(field=field):
-                if 0 <= i <= 6:
-                    DayOfWeekField(field, non_standard=True)
-                else:
-                    with self.assertRaises(FieldParseError):
-                        DayOfWeekField(field, non_standard=True)
-
-    def test_error_invalid_sharp(self):
-        for i, k in itertools.product(range(0, 10), range(0, 10)):
-            field = '{0}#{1}'.format(i, k)
-            with self.subTest(field=field):
-                if 0 <= i <= 6 and 1 <= k <= 5:
-                    DayOfWeekField(field, non_standard=True)
-                else:
-                    with self.assertRaises(FieldParseError):
-                        DayOfWeekField(field, non_standard=True)
