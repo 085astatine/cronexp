@@ -3,7 +3,8 @@
 import calendar
 import enum
 from typing import NamedTuple, Optional
-from ._field import Field, month_word_set, weekday_word_set
+from ._field import Field
+from ._field_parser import month_word_set, weekday_word_set
 
 
 class DayCondition(enum.Enum):
