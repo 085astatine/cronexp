@@ -19,7 +19,7 @@ class DayOfWeekField:
         self._is_blank = result.is_blank
         self._value = result.value
         self._l = result.last
-        self._sharp = result.hash
+        self._hash = result.hash
 
     @property
     def is_any(self) -> bool:
@@ -60,8 +60,8 @@ class DayOfWeekField:
                 return None
             target.extend(day_of_week_l(l, year, month) for l in self._l)
             target.extend(
-                    day_of_week_sharp(weekday, week_number, year, month)
-                    for weekday, week_number in self._sharp)
+                    day_of_week_hash(weekday, week_number, year, month)
+                    for weekday, week_number in self._hash)
         return min(
                 filter(lambda x: x is not None and (day is None or day < x),
                        target),
@@ -78,7 +78,7 @@ def day_of_week_l(
     return lastday - (init_weekday + lastday - weekday) % 7
 
 
-def day_of_week_sharp(
+def day_of_week_hash(
         weekday: int,
         week_number: int,
         year: int,

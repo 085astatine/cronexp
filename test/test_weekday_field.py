@@ -7,7 +7,7 @@ import math
 import unittest
 from cronexp._field_parser import weekday_word_set
 from cronexp._weekday_field import (
-        DayOfWeekField, day_of_week_l, day_of_week_sharp)
+        DayOfWeekField, day_of_week_l, day_of_week_hash)
 
 
 class DayOfWeekLTest(unittest.TestCase):
@@ -36,8 +36,8 @@ class DayOfWeekLTest(unittest.TestCase):
                             expected)
 
 
-class DayOfWeekSharpTest(unittest.TestCase):
-    def test_sharp(self):
+class DayOfWeekHashTest(unittest.TestCase):
+    def test_hash(self):
         year = 2019
         first_weekday_list = {
                 'sun': [6, 3, 3, 7, 5, 2, 7, 4, 1, 6, 3, 1],
@@ -67,7 +67,7 @@ class DayOfWeekSharpTest(unittest.TestCase):
                         year=year,
                         month=month):
                     self.assertEqual(
-                            day_of_week_sharp(
+                            day_of_week_hash(
                                     weekday,
                                     week_number,
                                     year,
@@ -128,7 +128,7 @@ class DayOfWeekFieldTest(unittest.TestCase):
             with self.subTest(year=year, month=month, day=day):
                 self.assertEqual(field.next(year, month, day), expected)
 
-    def test_sharp(self):
+    def test_hash(self):
         field = DayOfWeekField(
                 'Mon#1,Fri#1,Tue#2,Thu#2,Wed#3,Sun#4,Sat#4,Mon#5,Fri#5',
                 non_standard=True)
