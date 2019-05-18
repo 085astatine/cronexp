@@ -77,7 +77,10 @@ class DayOfWeekHashTest(unittest.TestCase):
 
 class DayOfWeekFieldTest(unittest.TestCase):
     def test_normal(self):
-        field = DayOfWeekField('Mon,Wed,Fri', non_standard=False)
+        field = DayOfWeekField(
+                'Mon,Wed,Fri',
+                use_word_set=True,
+                non_standard=False)
         year = 2019
         init_date = datetime.date(year, 1, 1)
         expected_list = list(
@@ -98,12 +101,15 @@ class DayOfWeekFieldTest(unittest.TestCase):
                 self.assertEqual(field.next(year, month, day), expected)
 
     def test_blank(self):
-        field = DayOfWeekField('?', non_standard=True)
+        field = DayOfWeekField('?', use_word_set=True, non_standard=True)
         self.assertTrue(field.is_blank)
         self.assertEqual(field.next(2019, 1, 1), None)
 
     def test_l(self):
-        field = DayOfWeekField('MonL,ThuL', non_standard=True)
+        field = DayOfWeekField(
+                'MonL,ThuL',
+                use_word_set=True,
+                non_standard=True)
         year = 2019
         expected_table = [
                 [28, 31],  # 2019/01
@@ -131,6 +137,7 @@ class DayOfWeekFieldTest(unittest.TestCase):
     def test_hash(self):
         field = DayOfWeekField(
                 'Mon#1,Fri#1,Tue#2,Thu#2,Wed#3,Sun#4,Sat#4,Mon#5,Fri#5',
+                use_word_set=True,
                 non_standard=True)
         year = 2019
         expected_table = [
@@ -157,7 +164,10 @@ class DayOfWeekFieldTest(unittest.TestCase):
                 self.assertEqual(field.next(year, month, day), expected)
 
     def test_next(self):
-        field = DayOfWeekField('Sun,Sat#2,Sat#4,FriL', non_standard=True)
+        field = DayOfWeekField(
+                'Sun,Sat#2,Sat#4,FriL',
+                use_word_set=True,
+                non_standard=True)
         year = 2019
         expected_table = [
                 [6, 12, 13, 20, 25, 26, 27],  # 2019/01

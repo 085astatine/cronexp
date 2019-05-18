@@ -6,11 +6,15 @@ from ._field_parser import FieldParser, weekday_word_set
 
 
 class DayOfWeekField:
-    def __init__(self, field: str, non_standard: bool) -> None:
+    def __init__(
+            self,
+            field: str,
+            use_word_set: bool,
+            non_standard: bool) -> None:
         self._non_standard = non_standard
         min_ = 0
         max_ = 6
-        word_set = weekday_word_set()
+        word_set = weekday_word_set() if use_word_set else None
         parser = FieldParser(field, min_, max_, word_set=word_set)
         result = parser.parse_weekday_field(
                 non_standard=non_standard,
