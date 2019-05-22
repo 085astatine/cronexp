@@ -4,17 +4,18 @@ import calendar
 import datetime
 import math
 import unittest
-from cronexp._dateexp import Dateexp, DayCondition
+from cronexp._dateexp import Dateexp
+from cronexp._dayexp import DaySelectionMode
 
 
 class DateexpTest(unittest.TestCase):
     def test_every_day(self):
-        for day_condition in DayCondition:
+        for day_selection_mode in [DaySelectionMode.AND, DaySelectionMode.OR]:
             dateexp = Dateexp(
                     day='*',
                     month='*',
                     weekday='*',
-                    day_condition=day_condition)
+                    day_selection_mode=day_selection_mode)
             init_date = datetime.date(year=2019, month=1, day=1)
             for total_days in range(0, 365 + 1):
                 date = init_date + datetime.timedelta(days=total_days)
@@ -23,7 +24,7 @@ class DateexpTest(unittest.TestCase):
                         year=date.year,
                         month=date.month,
                         day=date.day,
-                        day_condition=day_condition):
+                        day_selection_mode=day_selection_mode):
                     result = dateexp.next(
                             year=date.year,
                             month=date.month,
@@ -33,12 +34,12 @@ class DateexpTest(unittest.TestCase):
                     self.assertEqual(result.year, next_date.year)
 
     def test_every_month(self):
-        for day_condition in DayCondition:
+        for day_selection_mode in [DaySelectionMode.AND, DaySelectionMode.OR]:
             dateexp = Dateexp(
                     day='10',
                     month='*',
                     weekday='*',
-                    day_condition=day_condition)
+                    day_selection_mode=day_selection_mode)
             init_date = datetime.date(year=2019, month=1, day=1)
             for total_days in range(0, 365 + 1):
                 date = init_date + datetime.timedelta(days=total_days)
@@ -55,7 +56,7 @@ class DateexpTest(unittest.TestCase):
                         year=date.year,
                         month=date.month,
                         day=date.day,
-                        day_condition=day_condition):
+                        day_selection_mode=day_selection_mode):
                     result = dateexp.next(
                             year=date.year,
                             month=date.month,
@@ -65,12 +66,12 @@ class DateexpTest(unittest.TestCase):
                     self.assertEqual(result.year, next_year)
 
     def test_yearly(self):
-        for day_condition in DayCondition:
+        for day_selection_mode in [DaySelectionMode.AND, DaySelectionMode.OR]:
             dateexp = Dateexp(
                     day='2',
                     month='4',
                     weekday='*',
-                    day_condition=day_condition)
+                    day_selection_mode=day_selection_mode)
             init_date = datetime.date(year=2019, month=1, day=1)
             for total_days in range(0, 365 + 1):
                 date = init_date + datetime.timedelta(days=total_days)
@@ -81,7 +82,7 @@ class DateexpTest(unittest.TestCase):
                         year=date.year,
                         month=date.month,
                         day=date.day,
-                        day_condition=day_condition):
+                        day_selection_mode=day_selection_mode):
                     result = dateexp.next(
                             year=date.year,
                             month=date.month,
@@ -91,14 +92,14 @@ class DateexpTest(unittest.TestCase):
                     self.assertEqual(result.year, next_year)
 
     def test_every_weekday(self):
-        for day_condition in DayCondition:
+        for day_selection_mode in [DaySelectionMode.AND, DaySelectionMode.OR]:
             weekday_list = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
             for weekday_index, weekday in enumerate(weekday_list):
                 dateexp = Dateexp(
                         day='*',
                         month='*',
                         weekday=weekday,
-                        day_condition=day_condition)
+                        day_selection_mode=day_selection_mode)
                 init_date = datetime.date(year=2019, month=1, day=1)
                 for total_days in range(0, 365 + 1):
                     date = init_date + datetime.timedelta(days=total_days)
@@ -109,7 +110,7 @@ class DateexpTest(unittest.TestCase):
                             year=date.year,
                             month=date.month,
                             day=date.day,
-                            day_condition=day_condition):
+                            day_selection_mode=day_selection_mode):
                         result = dateexp.next(
                                 year=date.year,
                                 month=date.month,
@@ -120,12 +121,12 @@ class DateexpTest(unittest.TestCase):
                         self.assertEqual(result.year, next_date.year)
 
     def test_next(self):
-        for day_condition in DayCondition:
+        for day_selection_mode in [DaySelectionMode.AND, DaySelectionMode.OR]:
             dateexp = Dateexp(
                     day='*/10',
                     month='*/3',
                     weekday='*',
-                    day_condition=day_condition)
+                    day_selection_mode=day_selection_mode)
             init_date = datetime.date(year=2019, month=1, day=1)
             for total_days in range(0, 365 + 1):
                 date = init_date + datetime.timedelta(days=total_days)
@@ -155,7 +156,7 @@ class DateexpTest(unittest.TestCase):
                         year=date.year,
                         month=date.month,
                         day=date.day,
-                        day_condition=day_condition):
+                        day_selection_mode=day_selection_mode):
                     result = dateexp.next(
                             year=date.year,
                             month=date.month,
@@ -169,7 +170,7 @@ class DateexpTest(unittest.TestCase):
                 day='*/5',
                 month='*',
                 weekday='Fri',
-                day_condition=DayCondition.MONTH_OR_WEEK)
+                day_selection_mode=DaySelectionMode.OR)
         init_date = datetime.date(year=2019, month=1, day=1)
         for total_days in range(0, 365 + 1):
             date = init_date + datetime.timedelta(days=total_days)
@@ -194,7 +195,7 @@ class DateexpTest(unittest.TestCase):
                 day='*/5',
                 month='*',
                 weekday='Fri',
-                day_condition=DayCondition.MONTH_AND_WEEK)
+                day_selection_mode=DaySelectionMode.AND)
         init_date = datetime.date(year=2019, month=1, day=1)
         for total_days in range(0, 365 + 1):
             date = init_date + datetime.timedelta(days=total_days)
@@ -226,7 +227,7 @@ class DateexpTest(unittest.TestCase):
                     day='1-7',
                     month='*',
                     weekday=weekday,
-                    day_condition=DayCondition.MONTH_AND_WEEK)
+                    day_selection_mode=DaySelectionMode.AND)
             init_date = datetime.date(year=2019, month=1, day=1)
             for total_days in range(0, 365 + 1):
                 date = init_date + datetime.timedelta(days=total_days)
@@ -264,12 +265,12 @@ class DateexpTest(unittest.TestCase):
                     self.assertEqual(result.year, next_date.year)
 
     def test_error_nonexistent_date(self):
-        for day_condition in DayCondition:
-            with self.subTest(day_condition=day_condition):
+        for day_selection_mode in [DaySelectionMode.AND, DaySelectionMode.OR]:
+            with self.subTest(day_selection_mode=day_selection_mode):
                 dateexp = Dateexp(
                         day='30',
                         month='2',
                         weekday='*',
-                        day_condition=day_condition)
+                        day_selection_mode=day_selection_mode)
                 with self.assertRaises(RecursionError):
                     dateexp.next(day=1, month=1, year=2019)
