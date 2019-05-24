@@ -5,7 +5,7 @@ import datetime
 import itertools
 import math
 import unittest
-from cronexp._field_parser import weekday_word_set
+from cronexp._field_parser import FieldParseError, weekday_word_set
 from cronexp._weekday_field import (
         DayOfWeekField, day_of_week_l, day_of_week_hash)
 
@@ -79,8 +79,8 @@ class DayOfWeekFieldTest(unittest.TestCase):
     def test_normal(self):
         field = DayOfWeekField(
                 'Mon,Wed,Fri',
-                use_word_set=True,
-                non_standard=False)
+                non_standard=False,
+                use_word_set=True)
         year = 2019
         init_date = datetime.date(year, 1, 1)
         expected_list = list(
@@ -101,15 +101,15 @@ class DayOfWeekFieldTest(unittest.TestCase):
                 self.assertEqual(field.next(year, month, day), expected)
 
     def test_blank(self):
-        field = DayOfWeekField('?', use_word_set=True, non_standard=True)
+        field = DayOfWeekField('?', non_standard=True, use_word_set=True)
         self.assertTrue(field.is_blank)
         self.assertEqual(field.next(2019, 1, 1), None)
 
     def test_l(self):
         field = DayOfWeekField(
                 'MonL,ThuL',
-                use_word_set=True,
-                non_standard=True)
+                non_standard=True,
+                use_word_set=True)
         year = 2019
         expected_table = [
                 [28, 31],  # 2019/01
@@ -137,8 +137,8 @@ class DayOfWeekFieldTest(unittest.TestCase):
     def test_hash(self):
         field = DayOfWeekField(
                 'Mon#1,Fri#1,Tue#2,Thu#2,Wed#3,Sun#4,Sat#4,Mon#5,Fri#5',
-                use_word_set=True,
-                non_standard=True)
+                non_standard=True,
+                use_word_set=True)
         year = 2019
         expected_table = [
                 [4, 7, 8, 10, 16, 26, 27],  # 2019/01
@@ -166,8 +166,8 @@ class DayOfWeekFieldTest(unittest.TestCase):
     def test_next(self):
         field = DayOfWeekField(
                 'Sun,Sat#2,Sat#4,FriL',
-                use_word_set=True,
-                non_standard=True)
+                non_standard=True,
+                use_word_set=True)
         year = 2019
         expected_table = [
                 [6, 12, 13, 20, 25, 26, 27],  # 2019/01
@@ -191,3 +191,10 @@ class DayOfWeekFieldTest(unittest.TestCase):
                     default=None)
             with self.subTest(year=year, month=month, day=day):
                 self.assertEqual(field.next(year, month, day), expected)
+
+    def test_error_disuse_word_set(self):
+        with self.assertRaises(FieldParseError):
+            field = DayOfWeekField(
+                    'Mon',
+                    non_standard=True,
+                    use_word_set=False)

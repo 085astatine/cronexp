@@ -17,15 +17,16 @@ class Dayexp:
             self,
             day: str,
             weekday: str,
-            selection_mode: DaySelectionMode) -> None:
+            selection_mode: DaySelectionMode,
+            use_word_set: bool = True) -> None:
         self._mode = selection_mode
         self._day_of_month = DayOfMonthField(
                 day,
                 non_standard=self._mode is DaySelectionMode.EITHER)
         self._day_of_week = DayOfWeekField(
                 weekday,
-                use_word_set=True,
-                non_standard=self._mode is DaySelectionMode.EITHER)
+                non_standard=self._mode is DaySelectionMode.EITHER,
+                use_word_set=use_word_set)
         if (self._mode is DaySelectionMode.EITHER
                 and self._day_of_month.is_blank == self._day_of_week.is_blank):
             raise ValueError()

@@ -6,6 +6,7 @@ import math
 import unittest
 from cronexp._dateexp import Dateexp
 from cronexp._dayexp import DaySelectionMode
+from cronexp._field_parser import FieldParseError
 
 
 class DateexpTest(unittest.TestCase):
@@ -306,3 +307,18 @@ class DateexpTest(unittest.TestCase):
                         day_selection_mode=day_selection_mode)
                 with self.assertRaises(RecursionError):
                     dateexp.next(day=1, month=1, year=2019)
+
+    def test_error_disuse_word_set(self):
+        input_list = [
+                ('Jan', 'Mon'),
+                ('Jan', '1'),
+                ('1', 'Mon')]
+        for mode in DaySelectionMode:
+            for month, weekday in input_list:
+                with self.assertRaises(FieldParseError):
+                    field = Dateexp(
+                            '?' if mode is DaySelectionMode.EITHER else '*',
+                            month,
+                            weekday,
+                            day_selection_mode=mode,
+                            use_word_set=False)

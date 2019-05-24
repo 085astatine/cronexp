@@ -18,9 +18,16 @@ class Dateexp:
             day: str,
             month: str,
             weekday: str,
-            day_selection_mode: DaySelectionMode) -> None:
-        self._dayexp = Dayexp(day, weekday, selection_mode=day_selection_mode)
-        self._month = Field(month, 1, 12, word_set=month_word_set())
+            day_selection_mode: DaySelectionMode,
+            use_word_set: bool = True) -> None:
+        self._dayexp = Dayexp(
+                day,
+                weekday,
+                selection_mode=day_selection_mode,
+                use_word_set=use_word_set)
+        self._month = Field(
+                month, 1, 12,
+                word_set=month_word_set() if use_word_set else None)
 
     def next(self, day: int, month: int, year: int) -> DateexpNext:
         def impl(

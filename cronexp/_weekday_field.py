@@ -9,8 +9,8 @@ class DayOfWeekField:
     def __init__(
             self,
             field: str,
-            use_word_set: bool,
-            non_standard: bool) -> None:
+            non_standard: bool,
+            use_word_set: bool = True) -> None:
         self._non_standard = non_standard
         min_ = 0
         max_ = 6
