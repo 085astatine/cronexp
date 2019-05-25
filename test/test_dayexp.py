@@ -4,7 +4,7 @@ import calendar
 import itertools
 import math
 import unittest
-from cronexp._dayexp import Dayexp, DaySelectionMode
+from cronexp._dayexp import Dayexp, DayexpParseError, DaySelectionMode
 
 
 class DayexpTest(unittest.TestCase):
@@ -184,3 +184,15 @@ class DayexpTest(unittest.TestCase):
                 self.assertEqual(dayexp.next(year, month, day), expected)
                 if expected is not None:
                     self.assertTrue(dayexp.is_selected(year, month, expected))
+
+    def test_error_one_must_be_question(self):
+        input_list = [
+                ('1-7', 'Mon'),
+                ('?', '?')]
+        for day, weekday in input_list:
+            with self.subTest(day=day, weekday=weekday):
+                with self.assertRaises(DayexpParseError):
+                    dayexp = Dayexp(
+                            day,
+                            weekday,
+                            selection_mode=DaySelectionMode.EITHER)

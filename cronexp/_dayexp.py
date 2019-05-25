@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import enum
-from typing import Optional
+from typing import List, Optional
 from ._day_field import DayOfMonthField
 from ._weekday_field import DayOfWeekField
 
@@ -10,6 +10,21 @@ class DaySelectionMode(enum.Enum):
     OR = enum.auto()
     AND = enum.auto()
     EITHER = enum.auto()
+
+
+class DayexpParseError(Exception):
+    def __init__(self, day: str, weekday: str, message: str) -> None:
+        super().__init__()
+        self.day = day
+        self.weekday = weekday
+        self.message = message
+
+    def __str__(self) -> str:
+        line: List[str] = []
+        line.append('Failed to parse day("{0}") and weekday("{1}")'
+                    .format(self.day, self.weekday))
+        line.append('  {0}'.format(self.message))
+        return '\n'.join(line)
 
 
 class Dayexp:
@@ -29,7 +44,10 @@ class Dayexp:
                 use_word_set=use_word_set)
         if (self._mode is DaySelectionMode.EITHER
                 and self._day_of_month.is_blank == self._day_of_week.is_blank):
-            raise ValueError()
+            raise DayexpParseError(
+                    day,
+                    weekday,
+                    'One of day and weekday must be "?"')
 
     def next(self, year: int, month: int, day: Optional[int]) -> Optional[int]:
         next_day_of_month = self._day_of_month.next(year, month, day)
