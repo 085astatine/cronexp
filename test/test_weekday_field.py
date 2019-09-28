@@ -7,7 +7,7 @@ import math
 import unittest
 from cronexp._field_parser import FieldParseError, weekday_word_set
 from cronexp._weekday_field import (
-        DayOfWeekField, day_of_week_l, day_of_week_hash)
+        DayOfWeekField, SundayMode, day_of_week_l, day_of_week_hash)
 
 
 class DayOfWeekLTest(unittest.TestCase):
@@ -198,3 +198,32 @@ class DayOfWeekFieldTest(unittest.TestCase):
                     'Mon',
                     non_standard=True,
                     use_word_set=False)
+
+    def test_sunday_mode(self):
+        expression = [
+                ('0', '7'),
+                ('0,6', '6-7'),
+                ('Sun-Sat', 'Mon-Sun')]
+        for sun_is_0, sun_is_7 in expression:
+            with self.subTest(sun_is_0=sun_is_0, sun_is_7=sun_is_7):
+                field_0 = DayOfWeekField(
+                        sun_is_0,
+                        non_standard=True,
+                        sunday_mode=SundayMode.SUNDAY_IS_0)
+                with self.assertRaises(FieldParseError):
+                    field_7 = DayOfWeekField(
+                            sun_is_7,
+                            non_standard=True,
+                            sunday_mode=SundayMode.SUNDAY_IS_0)
+                field_7 = DayOfWeekField(
+                        sun_is_7,
+                        non_standard=True,
+                        sunday_mode=SundayMode.SUNDAY_IS_7)
+                year = 2019
+                for month, day in itertools.product(
+                        range(1, 13),
+                        (None, *range(1, 32))):
+                    with self.subTest(year=year, month=month, day=day):
+                        self.assertEqual(
+                                field_0.next(year, month, day),
+                                field_7.next(year, month, day))

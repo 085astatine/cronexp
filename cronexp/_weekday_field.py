@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import calendar
+import enum
 from typing import List, Optional
 from ._field_parser import FieldParser, weekday_word_set
+
+
+class SundayMode(enum.Enum):
+    SUNDAY_IS_0 = enum.auto()
+    SUNDAY_IS_7 = enum.auto()
 
 
 class DayOfWeekField:
@@ -10,11 +16,14 @@ class DayOfWeekField:
             self,
             field: str,
             non_standard: bool,
-            use_word_set: bool = True) -> None:
+            use_word_set: bool = True,
+            sunday_mode: SundayMode = SundayMode.SUNDAY_IS_0) -> None:
         self._non_standard = non_standard
-        min_ = 0
-        max_ = 6
+        min_ = 0 if sunday_mode is SundayMode.SUNDAY_IS_0 else 1
+        max_ = 6 if sunday_mode is SundayMode.SUNDAY_IS_0 else 7
         word_set = weekday_word_set() if use_word_set else None
+        if word_set is not None and sunday_mode is SundayMode.SUNDAY_IS_7:
+            word_set['sun'] = 7
         parser = FieldParser(field, min_, max_, word_set=word_set)
         result = parser.parse_weekday_field(
                 non_standard=non_standard,
@@ -22,6 +31,11 @@ class DayOfWeekField:
         self._is_any = result.is_any
         self._is_blank = result.is_blank
         self._value = result.value
+        if sunday_mode is SundayMode.SUNDAY_IS_7:
+            if 7 in self._value:
+                self._value.remove(7)
+                self._value.append(0)
+                self._value.sort()
         self._l = result.last
         self._hash = result.hash
 

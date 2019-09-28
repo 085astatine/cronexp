@@ -4,6 +4,7 @@ from typing import NamedTuple, Optional
 from ._dayexp import Dayexp, DaySelectionMode
 from ._field import Field
 from ._field_parser import month_word_set
+from ._weekday_field import SundayMode
 
 
 class DateexpNext(NamedTuple):
@@ -19,12 +20,14 @@ class Dateexp:
             month: str,
             weekday: str,
             day_selection_mode: DaySelectionMode,
-            use_word_set: bool = True) -> None:
+            use_word_set: bool = True,
+            sunday_mode: SundayMode = SundayMode.SUNDAY_IS_0) -> None:
         self._dayexp = Dayexp(
                 day,
                 weekday,
                 selection_mode=day_selection_mode,
-                use_word_set=use_word_set)
+                use_word_set=use_word_set,
+                sunday_mode=sunday_mode)
         self._month = Field(
                 month, 1, 12,
                 word_set=month_word_set() if use_word_set else None)

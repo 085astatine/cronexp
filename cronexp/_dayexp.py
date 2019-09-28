@@ -3,7 +3,7 @@
 import enum
 from typing import List, Optional
 from ._day_field import DayOfMonthField
-from ._weekday_field import DayOfWeekField
+from ._weekday_field import DayOfWeekField, SundayMode
 
 
 class DaySelectionMode(enum.Enum):
@@ -33,7 +33,8 @@ class Dayexp:
             day: str,
             weekday: str,
             selection_mode: DaySelectionMode,
-            use_word_set: bool = True) -> None:
+            use_word_set: bool = True,
+            sunday_mode: SundayMode = SundayMode.SUNDAY_IS_0) -> None:
         self._mode = selection_mode
         self._day_of_month = DayOfMonthField(
                 day,
@@ -41,7 +42,8 @@ class Dayexp:
         self._day_of_week = DayOfWeekField(
                 weekday,
                 non_standard=self._mode is DaySelectionMode.EITHER,
-                use_word_set=use_word_set)
+                use_word_set=use_word_set,
+                sunday_mode=sunday_mode)
         if (self._mode is DaySelectionMode.EITHER
                 and self._day_of_month.is_blank == self._day_of_week.is_blank):
             raise DayexpParseError(
