@@ -48,14 +48,13 @@ class Dateexp:
             day_ = self._dayexp.next(year_, month_, day_)
             if day_ is not None:
                 return DateexpNext(year=year_, month=month_, day=day_)
-            else:
-                next_month = self._month.next(month_)
-                month_ = next_month.value
-                if next_month.move_up:
-                    year_ += 1
-                    if self._max_year is not None and self._max_year < year_:
-                        return None
-                return impl(year_, month_, day_)
+            next_month = self._month.next(month_)
+            month_ = next_month.value
+            if next_month.move_up:
+                year_ += 1
+                if self._max_year is not None and self._max_year < year_:
+                    return None
+            return impl(year_, month_, day_)
 
         return impl(year, month, day)
 

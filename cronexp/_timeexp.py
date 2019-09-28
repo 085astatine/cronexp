@@ -23,17 +23,15 @@ class Timeexp:
                         hour=next_hour.value,
                         minute=self._minute.min(),
                         move_up=move_up_ or next_hour.move_up)
-            else:
-                next_minute = self._minute.next(minute_)
-                if next_minute.move_up:
-                    hour_ += 1
-                if self._hour.is_selected(hour_):
-                    return TimeexpNext(
-                            hour=hour_,
-                            minute=next_minute.value,
-                            move_up=move_up_)
-                else:
-                    return impl(hour_, next_minute.value, move_up_)
+            next_minute = self._minute.next(minute_)
+            if next_minute.move_up:
+                hour_ += 1
+            if self._hour.is_selected(hour_):
+                return TimeexpNext(
+                        hour=hour_,
+                        minute=next_minute.value,
+                        move_up=move_up_)
+            return impl(hour_, next_minute.value, move_up_)
         return impl(hour, minute, False)
 
     def is_selected(self, hour: int, minute: int) -> bool:

@@ -20,7 +20,7 @@ class Field:
         result = parser.parse_field()
         self._is_any = result.is_any
         self._value = result.value
-        assert(len(self._value) != 0)
+        assert self._value
 
     @property
     def is_any(self) -> bool:

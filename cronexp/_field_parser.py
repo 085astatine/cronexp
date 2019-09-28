@@ -296,21 +296,18 @@ def _evaluate_standard(
     if step is None:
         if begin is None:
             return None
-        else:
-            if end is None:
-                return [begin]
-            else:
-                return list(range(begin, end + 1))
-    else:
-        result: List[int] = []
-        init = begin if begin is not None else min_
-        last = end if end is not None else max_
-        if init < last and step > 0:
-            value = init
-            while value <= last:
-                result.append(value)
-                value += step
-        return result
+        if end is None:
+            return [begin]
+        return list(range(begin, end + 1))
+    result: List[int] = []
+    init = begin if begin is not None else min_
+    last = end if end is not None else max_
+    if init < last and step > 0:
+        value = init
+        while value <= last:
+            result.append(value)
+            value += step
+    return result
 
 
 def _word_set_to_regex(word_set: Optional[Dict[str, int]]) -> str:
