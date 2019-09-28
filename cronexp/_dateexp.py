@@ -20,6 +20,7 @@ class Dateexp:
             month: str,
             weekday: str,
             day_selection_mode: DaySelectionMode,
+            max_year: Optional[int] = None,
             use_word_set: bool = True,
             sunday_mode: SundayMode = SundayMode.SUNDAY_IS_0) -> None:
         self._dayexp = Dayexp(
@@ -31,12 +32,13 @@ class Dateexp:
         self._month = Field(
                 month, 1, 12,
                 word_set=month_word_set() if use_word_set else None)
+        self._max_year = max_year
 
-    def next(self, day: int, month: int, year: int) -> DateexpNext:
+    def next(self, day: int, month: int, year: int) -> Optional[DateexpNext]:
         def impl(
                 year_: int,
                 month_: int,
-                day_: Optional[int]) -> DateexpNext:
+                day_: Optional[int]) -> Optional[DateexpNext]:
             if not self._month.is_selected(month_):
                 next_month = self._month.next(month_)
                 day_ = None
@@ -51,6 +53,8 @@ class Dateexp:
                 month_ = next_month.value
                 if next_month.move_up:
                     year_ += 1
+                    if self._max_year is not None and self._max_year < year_:
+                        return None
                 return impl(year_, month_, day_)
 
         return impl(year, month, day)

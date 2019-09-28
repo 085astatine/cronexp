@@ -322,3 +322,20 @@ class DateexpTest(unittest.TestCase):
                             weekday,
                             day_selection_mode=mode,
                             use_word_set=False)
+
+    def test_max_year(self):
+        no_max_year = Dateexp(
+                '30',
+                '2',
+                '?',
+                max_year=None,
+                day_selection_mode=DaySelectionMode.EITHER)
+        with self.assertRaises(RecursionError):
+            no_max_year.next(year=2019, month=1, day=1)
+        with_max_year = Dateexp(
+                '30',
+                '2',
+                '?',
+                max_year=2100,
+                day_selection_mode=DaySelectionMode.EITHER)
+        self.assertEqual(with_max_year.next(year=2019, month=1, day=1), None)
